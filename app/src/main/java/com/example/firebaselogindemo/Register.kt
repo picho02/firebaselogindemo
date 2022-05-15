@@ -9,6 +9,9 @@ import android.widget.Toast
 import com.example.firebaselogindemo.databinding.FragmentLoginBinding
 import com.example.firebaselogindemo.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 
 
 class Register : Fragment() {
@@ -16,6 +19,7 @@ class Register : Fragment() {
     lateinit var autenticacion: FirebaseAuth
     lateinit var principalFragment: Principal
     lateinit var loginFragment: Login
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +39,15 @@ class Register : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnAceptarRegister.setOnClickListener {
+            val nombre: String = binding.etName.text.toString()
+            val apellido: String = binding.etApellido.text.toString()
             val correo: String = binding.etEmailRegister.text.toString()
             val password: String = binding.etPswRegister.text.toString()
             autenticacion.createUserWithEmailAndPassword(correo, password).addOnCompleteListener {
                 if (it.isSuccessful) {
+                    db.collection("user").document(autenticacion.currentUser.toString()).set(
+                       hashMapOf( "nombre" to nombre, "apellido" to apellido, "email" to correo, "password" to password)
+                    )
                     //avanzar a la pantalla principal
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.replace(R.id.fragmentContainerView,principalFragment)
@@ -55,6 +64,8 @@ class Register : Fragment() {
                 ?.replace(R.id.fragmentContainerView,loginFragment)
                 ?.commit()
         }
+
     }
 
 }
+

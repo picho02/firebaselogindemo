@@ -8,11 +8,13 @@ import android.view.ViewGroup
 import com.example.firebaselogindemo.databinding.FragmentLoginBinding
 import com.example.firebaselogindemo.databinding.FragmentPrincipalBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class Principal : Fragment() {
     private lateinit var binding: FragmentPrincipalBinding
     lateinit var autenticacion: FirebaseAuth
     lateinit var loginFragment: Login
+    private val db = FirebaseFirestore.getInstance()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +29,9 @@ class Principal : Fragment() {
         binding = FragmentPrincipalBinding.inflate(inflater, container, false)
         autenticacion = FirebaseAuth.getInstance()
         loginFragment = Login()
+        db.collection("user").document(autenticacion.currentUser.toString()).get().addOnSuccessListener {
+            binding.tvBienvenida.text= it.get("nombre") as String?
+        }
         return binding.root
     }
 
@@ -34,6 +39,7 @@ class Principal : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.btnLogOut.setOnClickListener {
             autenticacion.signOut()
+
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.fragmentContainerView,loginFragment)
                 ?.commit()
